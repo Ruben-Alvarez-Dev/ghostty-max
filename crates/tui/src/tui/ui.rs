@@ -3335,18 +3335,6 @@ async fn run_event_loop(
 
             if matches!(key.code, KeyCode::Char('c') | KeyCode::Char('C'))
 
-                // Widget overlay toggles (Alt-T, Alt-B, Alt-S, Alt-D)
-                if matches!(key.code, KeyCode::Char(c) if "tbsd".contains(c))
-                    && key.modifiers.contains(KeyModifiers::ALT)
-                    && !key.modifiers.contains(KeyModifiers::CONTROL)
-                    && !key.modifiers.contains(KeyModifiers::SUPER)
-                    && app.view_stack.is_empty()
-                {   let hotkey = &key.code.to_string().to_lowercase();
-                    if hotkey == "d" { app.overlays.toggle_dashboard(); }
-                    else { app.overlays.toggle_by_hotkey(hotkey); }
-                    app.needs_redraw = true;
-                    continue;
-                }
                 && key.modifiers.contains(KeyModifiers::ALT)
                 && !key.modifiers.contains(KeyModifiers::CONTROL)
                 && !key.modifiers.contains(KeyModifiers::SUPER)
@@ -3354,6 +3342,22 @@ async fn run_event_loop(
             {
                 open_context_inspector(app);
                 continue;
+
+            // Widget overlay toggles (Alt-T, Alt-B, Alt-S, Alt-D)
+            if let KeyCode::Char(c) = key.code {
+                if "tbsd".contains(c)
+                    && key.modifiers.contains(KeyModifiers::ALT)
+                    && !key.modifiers.contains(KeyModifiers::CONTROL)
+                    && !key.modifiers.contains(KeyModifiers::SUPER)
+                    && app.view_stack.is_empty()
+                {
+                    let hotkey = c.to_string().to_lowercase();
+                    if hotkey == "d" { app.overlays.toggle_dashboard(); }
+                    else { app.overlays.toggle_by_hotkey(&hotkey); }
+                    app.needs_redraw = true;
+                    continue;
+                }
+            }
             }
 
             if !app.view_stack.is_empty() {
@@ -6832,6 +6836,9 @@ fn render(f: &mut Frame, app: &mut App) {
         onboarding::render(f, size, app);
         crate::tui::osc8::apply_links(f.buffer_mut());
         return;
+
+    // Render draggable widget overlays on top of everything.
+    app.overlays.render_all(f);
     }
 
     let header_height = 1;
@@ -8438,9 +8445,6 @@ pub(crate) fn status_color(level: StatusToastLevel) -> ratatui::style::Color {
 /// queued toasts so a burst of status events isn't dropped silently.
 const TOAST_STACK_MAX_VISIBLE: usize = 3;
 
-
-    // Render draggable widget overlays on top of everything.
-    app.overlays.render_all(f, &app.workspace);
 /// Render up to `TOAST_STACK_MAX_VISIBLE - 1` *additional* toasts as an
 /// overlay just above the footer when multiple are active. The most recent
 /// toast continues to render in the footer line itself; this strip is for
