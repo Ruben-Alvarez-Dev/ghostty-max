@@ -2521,6 +2521,9 @@ async fn run_event_loop(
             !app.is_loading && !has_running_agents && !app.is_compacting && !app.is_purging;
         workspace_context::refresh_if_needed(app, now, allow_workspace_context_refresh);
 
+            // Tick draggable overlays (widget SDK — polling, file watching, animations)
+            app.overlays.tick_all();
+
         // Draw is gated by the frame-rate limiter (120 FPS cap). When a
         // redraw is needed but the limiter says we're inside the cooldown
         // window, leave `needs_redraw = true` and shorten the poll timeout
@@ -3331,6 +3334,19 @@ async fn run_event_loop(
             }
 
             if matches!(key.code, KeyCode::Char('c') | KeyCode::Char('C'))
+
+                // Widget overlay toggles (Alt-T, Alt-B, Alt-S, Alt-D)
+                if matches!(key.code, KeyCode::Char(c) if "tbsd".contains(c))
+                    && key.modifiers.contains(KeyModifiers::ALT)
+                    && !key.modifiers.contains(KeyModifiers::CONTROL)
+                    && !key.modifiers.contains(KeyModifiers::SUPER)
+                    && app.view_stack.is_empty()
+                {   let hotkey = &key.code.to_string().to_lowercase();
+                    if hotkey == "d" { app.overlays.toggle_dashboard(); }
+                    else { app.overlays.toggle_by_hotkey(hotkey); }
+                    app.needs_redraw = true;
+                    continue;
+                }
                 && key.modifiers.contains(KeyModifiers::ALT)
                 && !key.modifiers.contains(KeyModifiers::CONTROL)
                 && !key.modifiers.contains(KeyModifiers::SUPER)
