@@ -38,11 +38,11 @@ use crossterm::event::{KeyCode, KeyEvent, MouseButton, MouseEvent, MouseEventKin
 use ratatui::{
     layout::Rect,
     prelude::*,
-    widgets::{Block, Borders, Clear, Paragraph, Wrap},
+    widgets::{Block, Borders, Clear, Paragraph},
 };
 use std::collections::{HashMap, VecDeque};
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::Command;
 use std::time::Instant;
 
@@ -285,7 +285,7 @@ impl Widget for ScriptWidget {
     }
 
     fn render(&self, f: &mut Frame, area: Rect, theme: &WidgetTheme) {
-        Clear.render(area, f.buffer_mut());
+        f.render_widget(Clear, area);
         let block = Block::default().borders(Borders::ALL)
             .title(format!(" ≡ {} (drag) ", self.title()))
             .border_style(Style::default().fg(theme.border))
@@ -360,7 +360,7 @@ impl Widget for FileWatchWidget {
     }
 
     fn render(&self, f: &mut Frame, area: Rect, theme: &WidgetTheme) {
-        Clear.render(area, f.buffer_mut());
+        f.render_widget(Clear, area);
         let block = Block::default().borders(Borders::ALL)
             .title(format!(" ≡ {} (drag) ", self.title()))
             .border_style(Style::default().fg(theme.border))
@@ -435,7 +435,7 @@ impl Widget for LogTailWidget {
     }
 
     fn render(&self, f: &mut Frame, area: Rect, theme: &WidgetTheme) {
-        Clear.render(area, f.buffer_mut());
+        f.render_widget(Clear, area);
         let block = Block::default().borders(Borders::ALL)
             .title(format!(" ≡ {} (drag) ", self.title()))
             .border_style(Style::default().fg(theme.success))
@@ -474,7 +474,7 @@ impl Widget for StaticWidget {
         if key.code == KeyCode::Esc { vec![WidgetAction::Close] } else { vec![] }
     }
     fn render(&self, f: &mut Frame, area: Rect, theme: &WidgetTheme) {
-        Clear.render(area, f.buffer_mut());
+        f.render_widget(Clear, area);
         let content = self.manifest.widget.static_content.as_deref().unwrap_or("");
         let block = Block::default().borders(Borders::ALL)
             .title(format!(" ≡ {} (drag) ", self.title()))
@@ -517,7 +517,7 @@ impl Widget for McpViewWidget {
         if key.code == KeyCode::Esc { vec![WidgetAction::Close] } else { vec![] }
     }
     fn render(&self, f: &mut Frame, area: Rect, theme: &WidgetTheme) {
-        Clear.render(area, f.buffer_mut());
+        f.render_widget(Clear, area);
         let block = Block::default().borders(Borders::ALL)
             .title(format!(" ≡ {} (drag) ", self.title()))
             .border_style(Style::default().fg(theme.accent))
